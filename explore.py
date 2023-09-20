@@ -8,7 +8,6 @@ import untangle
 import numpy as np
 import pandas as pd
 
-VIDEO_NAME = '26-2_cam01_assault01_place01_night_spring'
 DATA_PATH = '/mnt/d/ABC/Data'
 EVERY_N_FRAMES = 5
 ACTION_LABELS = ('normal', 'around', 'pushing', 'stop and go', 'pulling', 'kicking', 'throwing', 'piercing', 'punching', 'threaten', 'falldown')
@@ -44,7 +43,7 @@ def parse_actions(ann_obj):
 
 def print_action_names():
     """
-    Print all action names from the data_files.csv xml files
+    Print all action names from the data_files.csv xml files to put in the ACTION_LABELS
     """
     def get_action_names(actions):
         action_names = set()
@@ -73,9 +72,17 @@ def label_frames(actions, num_frames):
             labels[i][ACTION_LABELS.index(action['actionname'])] = 1
     return labels
 
-def parse_xml(xml_file_path, row=None):
+def parse_xml_for_labels(xml_file_path) -> np.ndarray:
+    """
+    Parses the xml file and returns a numpy array of shape (num_frames, num_actions)
+    Array is multilabel, if action j is performed at frame i, then labels[i][j] = 1
+
+    It will print the number of frames and duration of the video if the number of frames is less than 1000
+    If the error happens during the parsing, it will print the filename and the error and continue
+    """
     obj = untangle.parse(xml_file_path)
     num_frames = int(obj.annotation.header.frames.cdata)
+    # Sometimes the num_frames have negative or 0 values. Calculate the number of frames from the videofile.
     if num_frames < 1000:
         print(num_frames)
         import torchvision
@@ -93,33 +100,34 @@ def parse_xml(xml_file_path, row=None):
     return frame_labels
 
 def create_files_csv():
+    """
+    Run this first to create data_files.csv on DATA_PATH
+    |filename|path|
+    """
     df = pd.DataFrame(columns=['filename', 'path'])
     for name in glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True):
         df = df.append({'filename': os.path.basename(name)[:-4], 'path': os.path.dirname(name)[len(DATA_PATH)+1:]}, ignore_index=True)
     df.to_csv(os.path.join(DATA_PATH, 'data_files.csv'), index=False)
 
-# %%
-dataset = []
-if __name__ == "__main__":
+def get_dataset():
+    """
+    Returns a list of tuples (filename, labels)
+    Code is little bit messy because of the missing xml files 
+    I couldn't download the whole dataset because of the size
+    """
+    dataset = []
     df = pd.read_csv(os.path.join(DATA_PATH, 'data_files.csv'))
     for index, row in df.iterrows():
         xml_file = os.path.join(DATA_PATH, row['path'], row['filename']+'.xml')
         try:
-            labels = parse_xml(xml_file, row)
+            labels = parse_xml_for_labels(xml_file)
             dataset.append((os.path.join(row['path'], row['filename']), labels))
         except FileNotFoundError as e:
             print(e)
             df.drop(index, inplace=True)
+    return dataset
 
-# %%
-dataset
-
-# %%
-import torchvision
-video_path = '/mnt/d/ABC/Data/01.폭행(assult)/insidedoor_03/24-3/24-3_cam01_assault01_place09_night_winter.mp4'
-reader = torchvision.io.VideoReader(video_path, "video")
-reader_md = reader.get_metadata()
-print(reader_md)
-frames = torchvision.io.read_video(video_path)
-# %%
-frames
+if __name__ == '__main__':
+    dataset = get_dataset()
+    print(len(dataset))
+    print(dataset[0])
