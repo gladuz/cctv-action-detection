@@ -7,6 +7,7 @@ from xml.parsers.expat import ExpatError
 import untangle
 import numpy as np
 import pandas as pd
+import pickle
 
 DATA_PATH = '/mnt/d/ABC/Data'
 EVERY_N_FRAMES = 5
@@ -101,33 +102,33 @@ def parse_xml_for_labels(xml_file_path) -> np.ndarray:
 
 def create_files_csv():
     """
-    Run this first to create data_files.csv on DATA_PATH
+    Run this first to create data_files.csv on preprocess_data folder
     |filename|path|
     """
     df = pd.DataFrame(columns=['filename', 'path'])
     for name in glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True):
         df = df.append({'filename': os.path.basename(name)[:-4], 'path': os.path.dirname(name)[len(DATA_PATH)+1:]}, ignore_index=True)
-    df.to_csv(os.path.join(DATA_PATH, 'data_files.csv'), index=False)
+    df.to_csv(os.path.join("processed_data", "data_files.csv"), index=False)
 
 def get_dataset():
     """
-    Returns a list of tuples (filename, labels)
+    Returns a list of tuples (csv_index, filename, labels)
     Code is little bit messy because of the missing xml files 
     I couldn't download the whole dataset because of the size
     """
     dataset = []
-    df = pd.read_csv(os.path.join(DATA_PATH, 'data_files.csv'))
+    df = pd.read_csv(os.path.join("processed_data", 'data_files.csv'))
     for index, row in df.iterrows():
         xml_file = os.path.join(DATA_PATH, row['path'], row['filename']+'.xml')
         try:
             labels = parse_xml_for_labels(xml_file)
-            dataset.append((os.path.join(row['path'], row['filename']), labels))
+            dataset.append((index, os.path.join(row['path'], row['filename']), labels))
         except FileNotFoundError as e:
             print(e)
-            df.drop(index, inplace=True)
     return dataset
 
 if __name__ == '__main__':
+    create_files_csv()
     dataset = get_dataset()
-    print(len(dataset))
-    print(dataset[0])
+    pickle.dump(dataset, open(os.path.join("processed_data", "dataset.pkl"), 'wb'))
+# %%

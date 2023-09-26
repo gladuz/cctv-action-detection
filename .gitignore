@@ -1,2 +1,6 @@
+__pycache__/
 data/
 mmaction/
+slowfast/
+processed_data/dataset.pkl
+checkpoints/*
