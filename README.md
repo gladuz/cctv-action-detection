@@ -1,7 +1,9 @@
 # ABB project 
 
 ## Dataset parsing
-All the dataset preperation related code is in `explore.py`. By running `python explore.py` it will create 2 files in `processed_data` folder. 
+All the dataset preperation related code is in `explore.py`. First change the `DATA_FOLDER` in explore.py to the `.../Data/` folder that has 01, 02 folders and tree.txt.
+
+By running `python explore.py` it will create 2 files in `processed_data` folder. 
 
 - `data_files.csv` is the file paths with the name of the video and xml
 - `dataset.pkl` is the pickle dataset with `list(tuple) -> [(index, path, labels)]`. Path expludes the extension (easy to use by adding .xml or .mp4)
