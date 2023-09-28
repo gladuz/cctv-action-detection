@@ -4,7 +4,7 @@ import torchvision
 from torchvision import transforms
 from resnet import resnet50
 
-tv_model = resnet50()
+tv_model = resnet50(weights_path=None)
 
 # %%
 weights = torch.load('checkpoints/tsn_imagenet-pretrained-r50_8xb32-1x1x8-100e_kinetics400-rgb_20220906-2692d16c.pth')
