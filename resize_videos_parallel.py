@@ -12,6 +12,15 @@ import pickle
 from concurrent.futures import ThreadPoolExecutor
 
 def resize_video(input_path, output_path, dim=(720, 480)):
+    
+    input_path = input_path[:-4]
+    output_path = output_path[:-4]
+    
+    # check if the video is already resized
+    if os.path.exists(output_path):
+        tqdm.write(f"Video already resized: {output_path}") if '침입' in output_path else None
+        return
+    
     cap = cv2.VideoCapture(input_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -28,8 +37,8 @@ def resize_video(input_path, output_path, dim=(720, 480)):
     out.release()
     
 def process_video(data_path):
-    tqdm.write(f"Currently processing: {data_path}")
-    resize_video(data_path, data_path[:-4]+'_resized.mp4', dim=(TARGET_HEIGHT, TARGET_WIDTH))
+    tqdm.write(f"Currently processing: {data_path}") if '침입' in data_path else None
+    resize_video(data_path, data_path[:-4] + '_resized.mp4', dim=(TARGET_HEIGHT, TARGET_WIDTH))
 
 if __name__ == '__main__':
 

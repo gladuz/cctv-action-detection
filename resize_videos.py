@@ -8,6 +8,12 @@ import cv2
 import pickle
 
 def resize_video(input_path, output_path, dim=(720, 480)):
+    
+    # if the video is already resized, skip
+    if os.path.exists(output_path):
+        tqdm.write(f"Video already resized: {output_path}")
+        return
+    
     cap = cv2.VideoCapture(input_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
