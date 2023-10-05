@@ -51,3 +51,9 @@ After installing the gcc-10 install the correlation sampler package using that.
 ```bash
 CC=gcc-10 CXX=g++-10 pip install spatial-correlation-sampler==0.4.0
 ```
+
+## Running the flow extraction model
+```bash
+python combined_flow_extractor.py
+```
+![Flow extraction run](/assets/flow_extraction_screenshot.png "Flow extraction module run")
