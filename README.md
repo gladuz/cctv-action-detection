@@ -39,3 +39,21 @@ model.eval()
 ```
 ## Extracting the features of the frames
 For starting `extraction.py` has a code to get first 32 frames with sample rate of 6 and running it through resnet50. It uses the 480p resized sample video `processed_data/resized_480.mp4` for efficiency.
+
+
+## Flow extraction
+It doesn't compile with the GCC-11. If the system don't have it need to install gcc-10 and g++-10 first
+
+```bash
+sudo apt install gcc-10 g++-10
+```
+After installing the gcc-10 install the correlation sampler package using that.
+```bash
+CC=gcc-10 CXX=g++-10 pip install spatial-correlation-sampler==0.4.0
+```
+
+## Running the flow extraction model
+```bash
+python combined_flow_extractor.py
+```
+![Flow extraction run](/assets/flow_extraction_screenshot.png "Flow extraction module run")
