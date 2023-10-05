@@ -9,10 +9,12 @@ import numpy as np
 import pandas as pd
 import pickle
 
-DATA_PATH = '/mnt/d/ABC/Data'
-EVERY_N_FRAMES = 5
-ACTION_LABELS = ('normal', 'around', 'pushing', 'stop and go', 'pulling', 'kicking', 'throwing', 'piercing', 'punching', 'threaten', 'falldown')
+from tqdm import tqdm
 
+DATA_PATH = 'G:/내 드라이브/Project/RGBLab/ABB/Data'
+EVERY_N_FRAMES = 5
+# ACTION_LABELS = ('normal', 'around', 'pushing', 'stop and go', 'pulling', 'kicking', 'throwing', 'piercing', 'punching', 'threaten', 'falldown')
+ACTION_LABELS = ('piercing', 'stop and go', 'punching', 'threaten', 'kicking', 'running', 'pulling', 'around', 'climbwall', 'pushing', 'throwing', 'walking', 'falldown')
 
 # each action has objectname, start, end, actionname
 def parse_actions(ann_obj):
@@ -106,8 +108,33 @@ def create_files_csv():
     |filename|path|
     """
     df = pd.DataFrame(columns=['filename', 'path'])
-    for name in glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True):
+    all_files = list(glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True))
+    total_files = len(all_files)
+    
+    for name in tqdm(all_files, desc="Processing files", ncols=100):
+        tqdm.write(f"Currently processing: {name}")
         df = df.append({'filename': os.path.basename(name)[:-4], 'path': os.path.dirname(name)[len(DATA_PATH)+1:]}, ignore_index=True)
+        
+    df.to_csv(os.path.join("processed_data", "data_files.csv"), index=False)
+
+def create_resized_files_csv():
+    """
+    Run this first to create data_files.csv on preprocess_data folder
+    |filename|path|
+    """
+    df = pd.DataFrame(columns=['filename', 'path'])
+    all_files = list(glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True))
+    total_files = len(all_files)
+    
+    for name in tqdm(all_files, desc="Processing files", ncols=100):
+        tqdm.write(f"Currently processing: {name}")
+        
+        cur_file_name = os.path.basename(name)[:-4] # remove .xml
+        # add _resized.mp4 to the end of the filename
+        cur_file_name = cur_file_name + '_resized'
+        
+        df = df.append({'filename': cur_file_name, 'path': os.path.dirname(name)[len(DATA_PATH)+1:]}, ignore_index=True)
+        
     df.to_csv(os.path.join("processed_data", "data_files.csv"), index=False)
 
 def get_dataset():
@@ -118,13 +145,45 @@ def get_dataset():
     """
     dataset = []
     df = pd.read_csv(os.path.join("processed_data", 'data_files.csv'))
-    for index, row in df.iterrows():
+    total_rows = len(df)
+    
+    for index, row in tqdm(df.iterrows(), total=total_rows, desc="Processing rows", ncols=100):
         xml_file = os.path.join(DATA_PATH, row['path'], row['filename']+'.xml')
+        
         try:
             labels = parse_xml_for_labels(xml_file)
             dataset.append((index, os.path.join(row['path'], row['filename']), labels))
         except FileNotFoundError as e:
-            print(e)
+            print(f"FileNotFoundError: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            
+    return dataset
+
+def get_resized_dataset():
+    """
+    Returns a list of tuples (csv_index, filename, labels)
+    Code is little bit messy because of the missing xml files 
+    I couldn't download the whole dataset because of the size
+    """
+    dataset = []
+    df = pd.read_csv(os.path.join("processed_data", 'data_files.csv'))
+    total_rows = len(df)
+    
+    for index, row in tqdm(df.iterrows(), total=total_rows, desc="Processing rows", ncols=100):
+        # xml_file = os.path.join(DATA_PATH, row['path'], row['filename']+'.xml')
+        filename = row['filename'][:-8]
+        
+        xml_file = os.path.join(DATA_PATH, row['path'], filename+'.xml')
+        
+        try:
+            labels = parse_xml_for_labels(xml_file)
+            dataset.append((index, os.path.join(row['path'], filename + '_resized'), labels))
+        except FileNotFoundError as e:
+            print(f"FileNotFoundError: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            
     return dataset
 
 if __name__ == '__main__':

@@ -1,0 +1,4 @@
+1. 원본 영상 --> 다운스케일 --> resnet50() --> (L x 2048) --> .npy 저장
+
+option 1) 다운스케일 한 뒤에 구글 드라이브에 저장 (offline scheme)
+option 2) 다운스케일 한 뒤, 바로 resnet50 으로 feature exract 이후 벡터를 .npy로 저장 (online scheme)
