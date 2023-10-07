@@ -15,7 +15,6 @@ import pickle
 import numpy as np
 import os
 import torch
-import av
 
 from resnet import resnet50
 from torchvision import transforms
@@ -34,8 +33,11 @@ DATA_PATH = []
 resized_postpix = '_resized'
 
 def get_video_duration(video_path):
-    container = av.open(video_path)
-    duration = container.duration / av.time_base
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    duration = total_frames / fps
+    cap.release()
     return duration
 
 def uniform_temporal_subsample(video, num_frames):
