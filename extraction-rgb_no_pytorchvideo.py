@@ -10,6 +10,7 @@
 # The dictionary is saved as a pickle file.
 """
 
+import cv2
 import pickle
 import numpy as np
 import os
@@ -17,14 +18,8 @@ import torch
 import av
 
 from resnet import resnet50
-from pytorchvideo.data.encoded_video import EncodedVideo
+from torchvision import transforms
 from torchvision.transforms import Compose
-from pytorchvideo.transforms import (
-    ApplyTransformToKey,
-    ShortSideScale,
-    UniformTemporalSubsample,
-    UniformCropVideo
-)
 from torchvision.transforms._transforms_video import (
     CenterCropVideo,
     NormalizeVideo,
@@ -42,6 +37,31 @@ def get_video_duration(video_path):
     container = av.open(video_path)
     duration = container.duration / av.time_base
     return duration
+
+def uniform_temporal_subsample(video, num_frames):
+    total_frames = len(video)
+    indices = np.linspace(0, total_frames - 1, num_frames, dtype=int)
+    return [video[i] for i in indices]
+
+def short_side_scale(image, short_side_length):
+    h, w, _ = image.shape
+    aspect_ratio = w / h
+
+    if h < w:
+        new_h = short_side_length
+        new_w = int(new_h * aspect_ratio)
+    else:
+        new_w = short_side_length
+        new_h = int(new_w / aspect_ratio)
+
+    resized_image = cv2.resize(image, (new_w, new_h))
+    return resized_image
+
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
+])
 
 if __name__ == '__main__':
 
@@ -68,48 +88,41 @@ if __name__ == '__main__':
     mean=[123.675, 116.28, 103.53]
     std=[58.395, 57.12, 57.375]
 
-    transform =  ApplyTransformToKey(
-        key="video",
-        transform=Compose(
-            [
-                UniformTemporalSubsample(num_frames),
-                NormalizeVideo(mean, std),
-                ShortSideScale(
-                    size=side_size
-                ),
-            ]
-        ),
-    )
-
     all_outputs = {}
 
     for video_file in tqdm(DATA_PATH, desc='Extracting videos', ncols=150):
 
         tqdm.write(f"Currently processing: {video_file}")
 
-        # feature extraction
-        video = EncodedVideo.from_path(video_file)
-        total_duration = get_video_duration(video_file)
-        num_clips = int(total_duration//clip_duration)
+        cap = cv2.VideoCapture(video_file)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        
+        with tqdm(total=total_frames, desc="Reading frames", ncols=100) as pbar:
+            video = []
 
-        for i in tqdm(range(num_clips), desc="Extracting features", ncols=100):
-            start_sec = i * clip_duration
-            end_sec = start_sec + clip_duration
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                resized_video = short_side_scale(frame, side_size)
+                video.append(resized_video)
+                pbar.update(1)
 
-            # load clip and transform
-            video_data = video.get_clip(start_sec=start_sec, end_sec=end_sec)
-            video_data = transform(video_data)
-            inputs = video_data["video"]
-            inputs = inputs.transpose(0,1).to(device)
+        video = uniform_temporal_subsample(video, num_frames)
 
-            # run model to get features
-            with torch.no_grad():
-                outputs = model(inputs)
+        for i, frame in enumerate(video):
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # OpenCV는 BGR을 사용하므로 RGB로 변환
+            frame = transform(frame)  # numpy 배열을 텐서로 변환하고 정규화
+            video[i] = frame
 
-            if video_file not in all_outputs:
-                all_outputs[video_file] = outputs.cpu().numpy()
-            else:
-                all_outputs[video_file] = np.concatenate((all_outputs[video_file], outputs.cpu().numpy()), axis=0)
+        video_tensor = torch.stack(video).to(device)
+
+        with torch.no_grad():
+            outputs = model(video_tensor)
+
+        all_outputs[video_file] = outputs.cpu().numpy()
+
+        cap.release()
 
     # save features
     with open('processed_data/features.pkl', 'wb') as f:

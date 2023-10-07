@@ -1,4 +1,18 @@
-1. 원본 영상 --> 다운스케일 --> resnet50() --> (L x 2048) --> .npy 저장
+1. note that we can't use "pytorchvideo" because it needs python 3.7, 3.8.
+we have to use python 3.6.9 due to the compatibility with tensorRT.
 
-option 1) 다운스케일 한 뒤에 구글 드라이브에 저장 (offline scheme)
-option 2) 다운스케일 한 뒤, 바로 resnet50 으로 feature exract 이후 벡터를 .npy로 저장 (online scheme)
+so i wrote a code for no-pytorchvideo version for rgb extraction but somehow
+it doesn't work with my computer.
+
+so i decided to use pytorchvideo version to extract rgb frames for training now,
+and i will try to find a way to fix the problem later.
+
+2. now i'm running extraction-rgb.py with pytorchvideo version on my
+local computer. (ETA is around 15 hours. p.s. now it's Oct 8th 00:00 am)
+
+3. can you code for extraction-flow.py? to extract flow frames from resized videos and
+"SAVE" them in the processed_data folder?
+
+later (ASAP), we can connect those two codes to make a single code for rgb and flow extraction.
+
+and then, we can train the model with rgb and flow features (vector)
