@@ -8,21 +8,16 @@ from tqdm import trange
 
 class CombinedFlowModel(nn.Module):
 
-    def __init__(self, num_frames) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.num_frames = num_frames
         self.flow_extractor = FastFlowNet()
-        self.bn_inception = BNInception((num_frames-1) * 2)
+        self.bn_inception = BNInception(2)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
     
-    # x is a tensor of shape (num_frames, 3, height, width)
-    # where num_frames is every N frames
     def forward(self, x):        
-        x = self.flow_extractor(x) # (num_frames-1, 2, height, width)
+        x = self.flow_extractor(x) # (B, 2, height, width)
         #Should be (x,y,x,y,x,y,x,y,x,y,x,y)
-        x = x.view(-1, x.shape[2], x.shape[3]) # (2*(num_frames-1), height, width)
-        #Add batch dimension
-        x = x.unsqueeze(0)
+        #x = x.view(-1, 2, x.shape[2], x.shape[3]) # (B, 2, height, width)
         x = self.bn_inception(x)
         x = self.avg_pool(x)
         return x
@@ -30,15 +25,16 @@ class CombinedFlowModel(nn.Module):
 
 #%%
 if __name__ == '__main__':
-    comb_model = CombinedFlowModel(num_frames=6).cuda().eval()
+    comb_model = CombinedFlowModel().cuda().eval()
     # input is stacked pair of frames (N-1, 3*2, H, W)
     # N-1 acts as the batch dimension for flow extractor
-    input_t = torch.randn(5, 6, 384, 512).cuda()
-    num_passes = 100
+    input_t = torch.randn(1, 6, 384, 512).cuda()
+    num_passes = 5
     print(f"Running {num_passes} passes of forward pass")
     start = time.time()
-    for x in trange(num_passes):
-        output_t = comb_model(input_t) 
+    with torch.no_grad():
+        for x in trange(num_passes):
+            output_t = comb_model(input_t) 
     end = time.time()
     print(f'Time elapsed: {end-start:.3f}s for {num_passes} passes, Each forward pass took: {(end-start)/num_passes*1000:.3f}ms')
     out_t = comb_model(input_t)
