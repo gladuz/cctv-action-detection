@@ -10,9 +10,18 @@ import pickle
 def resize_video(input_path, output_path, dim=(720, 480)):
     
     # if the video is already resized, skip
-    if os.path.exists(output_path):
+    # if os.path.exists(output_path):
+    #     tqdm.write(f"Video already resized: {output_path}")
+    #     return
+
+    # if the video is already resized and its size is bigger than 1 MB, skip
+    if os.path.exists(output_path) and os.path.getsize(output_path) > 1000000:
         tqdm.write(f"Video already resized: {output_path}")
         return
+    
+    elif os.path.exists(output_path) and os.path.getsize(output_path) <= 1000000:
+        tqdm.write(f"Video already resized but its size is smaller than 1 MB: {output_path}")
+        os.remove(output_path)
     
     cap = cv2.VideoCapture(input_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -37,7 +46,7 @@ if __name__ == '__main__':
     TARGET_WIDTH = 480
     TARGET_HEIGHT = 720
 
-    ROOT_PATH = os.path.abspath("G:\내 드라이브\Project\RGBLab\ABB\Data")
+    ROOT_PATH = os.path.abspath("I:\내 드라이브\Project\RGBLab\ABB\Data")
     DATA_PATH = []
     
     for single_data in data:
