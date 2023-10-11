@@ -87,29 +87,34 @@ if __name__ == '__main__':
 
         tqdm.write(f"Currently processing: {video_file}")
 
-        # feature extraction
-        video = EncodedVideo.from_path(video_file)
-        total_duration = get_video_duration(video_file)
-        num_clips = int(total_duration//clip_duration)
+        try:
+            # feature extraction
+            video = EncodedVideo.from_path(video_file)
+            total_duration = get_video_duration(video_file)
+            num_clips = int(total_duration//clip_duration)
 
-        for i in tqdm(range(num_clips), desc="Extracting features", ncols=100):
-            start_sec = i * clip_duration
-            end_sec = start_sec + clip_duration
+            for i in tqdm(range(num_clips), desc="Extracting features", ncols=100):
+                start_sec = i * clip_duration
+                end_sec = start_sec + clip_duration
 
-            # load clip and transform
-            video_data = video.get_clip(start_sec=start_sec, end_sec=end_sec)
-            video_data = transform(video_data)
-            inputs = video_data["video"]
-            inputs = inputs.transpose(0,1).to(device)
+                # load clip and transform
+                video_data = video.get_clip(start_sec=start_sec, end_sec=end_sec)
+                video_data = transform(video_data)
+                inputs = video_data["video"]
+                inputs = inputs.transpose(0,1).to(device)
 
-            # run model to get features
-            with torch.no_grad():
-                outputs = model(inputs)
+                # run model to get features
+                with torch.no_grad():
+                    outputs = model(inputs)
 
-            if video_file not in all_outputs:
-                all_outputs[video_file] = outputs.cpu().numpy()
-            else:
-                all_outputs[video_file] = np.concatenate((all_outputs[video_file], outputs.cpu().numpy()), axis=0)
+                if video_file not in all_outputs:
+                    all_outputs[video_file] = outputs.cpu().numpy()
+                else:
+                    all_outputs[video_file] = np.concatenate((all_outputs[video_file], outputs.cpu().numpy()), axis=0)
+                    
+        except:
+            tqdm.write(f"Error occured while processing: {video_file}")
+            continue
 
     # save features
     with open('processed_data/features.pkl', 'wb') as f:
