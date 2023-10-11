@@ -16,3 +16,11 @@ local computer. (ETA is around 15 hours. p.s. now it's Oct 8th 00:00 am)
 later (ASAP), we can connect those two codes to make a single code for rgb and flow extraction.
 
 and then, we can train the model with rgb and flow features (vector)
+
+[1002]
+1. have to fix an below error in "extraction-flow.py" code.
+
+Currently processing: G:\내 드라이브\Project\RGBLab\ABB\Data\01.폭행(assult)\inside_croki_02\24-5\24-5_cam01_assault01_place09_night_winter.mp4       
+Extracting features:   0%|                                                   | 0/42 [00:48<?, ?it/s]                         | 0/1923 [00:00<?, ?it/s]
+Error occured while processing: G:\내 드라이브\Project\RGBLab\ABB\Data\01.폭행(assult)\inside_croki_02\24-5\24-5_cam01_assault01_place09_night_winter.mp4
+Error message: The size of tensor a (57) must match the size of tensor b (56) at non-singleton dimension 3

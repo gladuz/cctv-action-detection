@@ -122,7 +122,7 @@ class FastFlowNet(nn.Module):
         vgrid = grid + flo
         vgrid[:, 0, :, :] = 2.0 * vgrid[:, 0, :, :] / max(W-1, 1) - 1.0
         vgrid[:, 1, :, :] = 2.0 * vgrid[:, 1, :, :] / max(H-1, 1) - 1.0
-        vgrid = vgrid.permute(0, 2, 3, 1)        
+        vgrid = vgrid.permute(0, 2, 3, 1)
         output = F.grid_sample(x, vgrid, mode='bilinear', align_corners=True)
         return output
 
