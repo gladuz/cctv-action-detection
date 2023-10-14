@@ -30,7 +30,12 @@ Error message: The size of tensor a (57) must match the size of tensor b (56) at
 it is just a test code (baseline) for now.
 
 2. i also coded some naive custom_data_loader in LSTR/custom_data_loader.py.
+    - We might need to use LSTR codebase for this. Because we might need random sampling of clips, multilabel support etc..
 
 3. let me know when your extraction for image and features are done.
-
+    - Image extraction is running now (11pm) ETA is ~8 hours. Will be around 100GB.
+    - I will run feature extraction after that
+    - I will also change the labels to the big 3 (assault and stuff)
+        - We might need to discuss this. Because each video has only small part of the video 
+            with continuous action. Model might not generalize well for unseen videos.
 4. have to add evaluation code to LSTR/train.py but it will not be hard.
