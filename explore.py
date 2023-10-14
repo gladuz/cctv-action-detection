@@ -11,7 +11,7 @@ import pickle
 
 from tqdm import tqdm
 
-DATA_PATH = 'G:/내 드라이브/Project/RGBLab/ABB/Data'
+DATA_PATH = '/data/common/abb_project/resized'
 EVERY_N_FRAMES = 5
 # ACTION_LABELS = ('normal', 'around', 'pushing', 'stop and go', 'pulling', 'kicking', 'throwing', 'piercing', 'punching', 'threaten', 'falldown')
 ACTION_LABELS = ('piercing', 'stop and go', 'punching', 'threaten', 'kicking', 'running', 'pulling', 'around', 'climbwall', 'pushing', 'throwing', 'walking', 'falldown')
@@ -110,6 +110,7 @@ def create_files_csv():
     df = pd.DataFrame(columns=['filename', 'path'])
     all_files = list(glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True))
     total_files = len(all_files)
+    print("There are {} files".format(total_files))
     
     for name in tqdm(all_files, desc="Processing files", ncols=100):
         tqdm.write(f"Currently processing: {name}")
@@ -125,7 +126,7 @@ def create_resized_files_csv():
     df = pd.DataFrame(columns=['filename', 'path'])
     all_files = list(glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True))
     total_files = len(all_files)
-    
+    print("There are {} files".format(total_files))
     for name in tqdm(all_files, desc="Processing files", ncols=100):
         tqdm.write(f"Currently processing: {name}")
         
@@ -187,7 +188,7 @@ def get_resized_dataset():
     return dataset
 
 if __name__ == '__main__':
-    create_files_csv()
+    #create_resized_files_csv()
     dataset = get_dataset()
     pickle.dump(dataset, open(os.path.join("processed_data", "dataset.pkl"), 'wb'))
 # %%

@@ -1,0 +1,15 @@
+/data/common/abb_project/resized/06.배회(wander)/outsidedoor_10/529-3/529-3_cam02_wander02_place08_night_spring_resized.mp4
+/data/common/abb_project/resized/06.배회(wander)/outsidedoor_09/142-1/142-1_cam02_wander02_place04_day_spring_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/outsidedoor_06/25-2/21-2_cam02_assault01_place09_day_summer_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/outsidedoor_06/25-2/21-2_cam02_assault01_place09_day_spring_resized.mp4
+/data/common/abb_project/resized/06.배회(wander)/outsidedoor_03/128-1/128-1_cam02_wander02_place01_day_summer_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/inside_croki_06/53-1/53-1_cam02_assault01_place01_day_summer_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/outsidedoor_06/25-2/21-2_cam01_assault01_place09_day_summer_resized.mp4
+/data/common/abb_project/resized/06.배회(wander)/outsidedoor_05/132-5/132-5_cam01_wander03_place06_night_summer_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/outsidedoor_06/25-2/21-2_cam01_assault01_place09_day_spring_resized.mp4
+/data/common/abb_project/resized/06.배회(wander)/outsidedoor_07/137-4/137-4_cam01_wander03_place04_day_summer_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/inside_croki_06/53-1/53-1_cam02_assault01_place01_day_spring_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/outsidedoor_08/5-5/5-5_cam01_assault01_place08_day_spring_resized.mp4
+/data/common/abb_project/resized/06.배회(wander)/outsidedoor_07/137-4/137-4_cam02_wander03_place04_day_summer_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/insidedoor_05/407-2/407-2_cam03_assault01_place04_day_winter_resized.mp4
+/data/common/abb_project/resized/01.폭행(assult)/inside_croki_06/53-1/53-1_cam01_assault01_place01_day_summer_resized.mp4

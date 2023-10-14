@@ -15,6 +15,7 @@ import numpy as np
 import os
 import torch
 import av
+import glob
 
 from resnet import resnet50
 from pytorchvideo.data.encoded_video import EncodedVideo
@@ -53,7 +54,7 @@ class SelectFirstAndLastFrames:
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-ROOT_PATH = os.path.abspath("G:\내 드라이브\Project\RGBLab\ABB\Data")
+ROOT_PATH = os.path.abspath("/data/common/abb_project/resized")
 DATA_PATH = []
 
 resized_postpix = ''
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     mean=[123.675, 116.28, 103.53]
     std=[58.395, 57.12, 57.375]
 
-    transform =  ApplyTransformToKey(
+    transform_flow =  ApplyTransformToKey(
         key="video",
         transform=Compose(
             [
@@ -104,8 +105,26 @@ if __name__ == '__main__':
         ),
     )
 
+    transform_rgb = ApplyTransformToKey(
+        key="video",
+        transform=Compose(
+            [
+                UniformTemporalSubsample(num_frames),
+                NormalizeVideo(mean, std),
+                ShortSideScale(
+                    size=side_size
+                ),
+
+            ]
+        ),
+    )
+
     all_outputs = {}
-    #DATA_PATH = ["processed_data/resized_480.mp4"]
+    error_files = set()
+    with open('processed_data/flow_error_files.txt', 'r') as f:
+        for line in f:
+            error_files.add(line.strip())
+    DATA_PATH = glob.glob(os.path.join(ROOT_PATH, '**', '*.mp4'), recursive=True)
     for video_file in tqdm(DATA_PATH, desc='Extracting videos', ncols=150):
 
         tqdm.write(f"Currently processing: {video_file}")
@@ -117,27 +136,30 @@ if __name__ == '__main__':
             total_duration = get_video_duration(video_file)
             num_clips = int(total_duration//clip_duration)
 
-            for i in tqdm(range(num_clips), desc="Extracting features", ncols=100):
+            for i in tqdm(range(num_clips-2, num_clips), desc="Extracting features", ncols=100):
                 start_sec = i * clip_duration
                 end_sec = start_sec + clip_duration
 
                 # load clip and transform
                 video_data = video.get_clip(start_sec=start_sec, end_sec=end_sec)
-                video_data = transform(video_data)
-                inputs = video_data["video"]
+                video_data_flow = transform_flow(video_data)
+                video_data_rgb = transform_rgb(video_data)
+                print(video_data_flow['video'].size(), video_data_rgb['video'].size())
+
+                inputs = video_data_flow["video"]
                 inputs = inputs.transpose(0,1)
                 # Cat the odd and even frames together on the channel dimension (first and last frames of each group of sampling_rate frames)
                 inputs = torch.cat([inputs[::2, :, :, :], inputs[1::2, :, :, :]], dim=1)
                 inputs = inputs.to(device) # (N, 6, H, W)
-                #print(inputs.shape)
-                # run model to get fea[tures
-                with torch.no_grad():
-                    outputs = model(inputs)
-                    outputs = outputs.squeeze()
-                if video_file not in all_outputs:
-                    all_outputs[video_file] = outputs.cpu().numpy()
-                else:
-                    all_outputs[video_file] = np.concatenate((all_outputs[video_file], outputs.cpu().numpy()), axis=0)
+                print(inputs.shape)
+                # # run model to get fea[tures
+                # with torch.no_grad():
+                #     outputs = model(inputs)
+                #     outputs = outputs.squeeze()
+                # if video_file not in all_outputs:
+                #     all_outputs[video_file] = outputs.cpu().numpy()
+                # else:
+                #     all_outputs[video_file] = np.concatenate((all_outputs[video_file], outputs.cpu().numpy()), axis=0)
                     
         except Exception as e:
             tqdm.write(f"Error occured while processing: {video_file}")
@@ -147,3 +169,5 @@ if __name__ == '__main__':
     # save features
     with open('processed_data/flow_features.pkl', 'wb') as f:
        pickle.dump(all_outputs, f)
+
+# %%
