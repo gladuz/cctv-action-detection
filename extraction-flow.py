@@ -11,10 +11,12 @@
 """
 #%%
 import pickle
+import random
 import numpy as np
 import os
 import torch
 import av
+import glob
 
 from resnet import resnet50
 from pytorchvideo.data.encoded_video import EncodedVideo
@@ -53,7 +55,8 @@ class SelectFirstAndLastFrames:
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-ROOT_PATH = os.path.abspath("G:\내 드라이브\Project\RGBLab\ABB\Data")
+ROOT_PATH = os.path.abspath("/data/common/abb_project/resized")
+FLOW_FEATURE_PATH = os.path.abspath("/data/common/abb_project/flow_features")
 DATA_PATH = []
 
 resized_postpix = ''
@@ -80,7 +83,9 @@ if __name__ == '__main__':
 
     for i, data_path in enumerate(DATA_PATH):
         DATA_PATH[i] = data_path + resized_postpix + '.mp4'
-
+    DATA_PATH = glob.glob(os.path.join(ROOT_PATH, '**', '*.mp4'), recursive=True)
+    #shuffle DATA_PATH
+    random.shuffle(DATA_PATH)
     num_frames = 32
     sampling_rate = 6
     frames_per_second = 30
@@ -103,19 +108,35 @@ if __name__ == '__main__':
             ]
         ),
     )
-
-    all_outputs = {}
+    #print(DATA_PATH)
+    #%%
+    #Load error files
+    error_files = set()
+    with open('processed_data/flow_error_files.txt', 'r') as f:
+        for line in f:
+            error_files.add(line.strip())
     #DATA_PATH = ["processed_data/resized_480.mp4"]
     for video_file in tqdm(DATA_PATH, desc='Extracting videos', ncols=150):
-
-        tqdm.write(f"Currently processing: {video_file}")
+        
+        video_name_for_save = "__".join(video_file.split('/')[5:])
+        feature_path_for_save = os.path.join(FLOW_FEATURE_PATH, video_name_for_save+".npy")
+        #tqdm.write(f"Currently processing: {video_file}")
+        
+        # check if the file is already processed
+        if os.path.isfile(feature_path_for_save):
+            continue
 
         # feature extraction
-        video = EncodedVideo.from_path(video_file)
+        try:
+            video = EncodedVideo.from_path(video_file)
+        except:
+            print("Error in decoding file {}".format(video_file))
+            error_files.add(video_file)
+            continue
         total_duration = get_video_duration(video_file)
         num_clips = int(total_duration//clip_duration)
-
-        for i in tqdm(range(num_clips), desc="Extracting features", ncols=100):
+        features_result = None
+        for i in tqdm(range(num_clips), desc="Extracting features", ncols=100, leave=False):
             start_sec = i * clip_duration
             end_sec = start_sec + clip_duration
 
@@ -130,12 +151,22 @@ if __name__ == '__main__':
             #print(inputs.shape)
             # run model to get fea[tures
             with torch.no_grad():
-                outputs = model(inputs)
+                try:
+                    outputs = model(inputs)
+                except:
+                    print(inputs.shape)
+                    print("Error in {}".format(video_file))
+                    break
                 outputs = outputs.squeeze()
-            if video_file not in all_outputs:
-                all_outputs[video_file] = outputs.cpu().numpy()
+            if features_result is None:
+                features_result = outputs.cpu().numpy()
             else:
-                all_outputs[video_file] = np.concatenate((all_outputs[video_file], outputs.cpu().numpy()), axis=0)
-    # save features
-    with open('processed_data/flow_features.pkl', 'wb') as f:
-       pickle.dump(all_outputs, f)
+                features_result = np.concatenate((features_result, outputs.cpu().numpy()), axis=0)
+        # save features
+        np.save(feature_path_for_save, features_result)
+
+    # save error files
+    with open('processed_data/flow_error_files.txt', 'w') as f:
+        for item in error_files:
+            f.write("%s\n" % item)
+# %%

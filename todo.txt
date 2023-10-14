@@ -24,3 +24,13 @@ Currently processing: G:\내 드라이브\Project\RGBLab\ABB\Data\01.폭행(assu
 Extracting features:   0%|                                                   | 0/42 [00:48<?, ?it/s]                         | 0/1923 [00:00<?, ?it/s]
 Error occured while processing: G:\내 드라이브\Project\RGBLab\ABB\Data\01.폭행(assult)\inside_croki_02\24-5\24-5_cam01_assault01_place09_night_winter.mp4
 Error message: The size of tensor a (57) must match the size of tensor b (56) at non-singleton dimension 3
+
+[1014]
+1. Currently LSTR/train.py seems to work. but we have to re-extract the features as you know,
+it is just a test code (baseline) for now.
+
+2. i also coded some naive custom_data_loader in LSTR/custom_data_loader.py.
+
+3. let me know when your extraction for image and features are done.
+
+4. have to add evaluation code to LSTR/train.py but it will not be hard.
