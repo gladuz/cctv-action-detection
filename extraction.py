@@ -10,6 +10,7 @@ from combined_flow_extractor import CombinedFlowModel
 import torchvision.transforms as transforms
 from PIL import Image
 import torch_tensorrt
+import numpy as np
 
 MEAN=[123.675/255, 116.28/255, 103.53/255]
 STD=[58.395/255, 57.12/255, 57.375/255]
@@ -27,7 +28,7 @@ class FrameDataset(Dataset):
             transforms.ToTensor(),
             transforms.Normalize(MEAN, STD),
         ])
-        self.frame_groups = [[i, i + 2, i+5] for i in range(1, len(self.frame_names)-5, EVERY_N_FRAMES)]
+        self.frame_groups = [[i, i + 2, i+5] for i in range(1, len(self.frame_names)-4, EVERY_N_FRAMES)]
 
     def __len__(self):
         return len(self.frame_groups)
@@ -57,40 +58,53 @@ flow_model = CombinedFlowModel().to(device)
 rgb_model.eval()
 flow_model.eval()
 
-inputs_rgb = [
-    torch_tensorrt.Input(
-        shape=(1, 3, 512, 768),
-        dtype=torch.float,
-    )
-]
-inputs_flow = [
-    torch_tensorrt.Input(
-        shape=(1, 6, 512, 768),
-        dtype=torch.float,
-    )
-]
-enabled_precisions = {torch.float}  # Run with fp16
+# inputs_rgb = [
+#     torch_tensorrt.Input(
+#         shape=(1, 3, 512, 768),
+#         dtype=torch.float,
+#     )
+# ]
+# inputs_flow = [
+#     torch_tensorrt.Input(
+#         shape=(1, 6, 512, 768),
+#         dtype=torch.float,
+#     )
+# ]
+# enabled_precisions = {torch.float}  # Run with fp16
 
-rgb_module = torch_tensorrt.compile(
-    rgb_model, inputs=inputs_rgb, enabled_precisions=enabled_precisions
-)
-flow_module = torch_tensorrt.compile(
-    flow_model, inputs=inputs_flow, enabled_precisions=enabled_precisions
-)
-torch.jit.save(rgb_module, "checkpoints/resnet_tensorrt.ts")
-torch.jit.save(flow_module, "checkpoints/flownet_tensorrt.ts")
+# rgb_module = torch_tensorrt.compile(
+#     rgb_model, inputs=inputs_rgb, enabled_precisions=enabled_precisions
+# )
+# flow_module = torch_tensorrt.compile(
+#     flow_model, inputs=inputs_flow, enabled_precisions=enabled_precisions
+# )
+# torch.jit.save(rgb_module, "checkpoints/resnet_tensorrt.ts")
+# torch.jit.save(flow_module, "checkpoints/flownet_tensorrt.ts")
 
 
 
 # %%
 for i in trange(args.video_id_start, args.video_id_end):
+    if os.path.exists(f"/data/common/abb_project/features/rgb/{videos[i]}.npy"):
+        continue
     dataset = FrameDataset(video_paths[i])
     dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=8)
+    rgb_feautures_list = []
+    flow_features_list = []
     for batch in dataloader:
         batch = batch.to(device)
-        st_time = time.time()
         with torch.no_grad():
-            rgb_features = rgb_module(batch[:, 1, :, :, :]).squeeze()
-            flow_features = flow_module(torch.cat([batch[:, 0, :, :, :], batch[:, 2, :, :, :]], dim=1)).squeeze()
-        print(time.time() - st_time)
+            rgb_features = rgb_model(batch[:, 1, :, :, :])
+            assert rgb_features.shape == (batch.shape[0], 2048), rgb_features.shape
+            flow_features = flow_model(torch.cat([batch[:, 0, :, :, :], batch[:, 2, :, :, :]], dim=1))
+            flow_features = flow_features.squeeze((2, 3))
+            assert flow_features.shape == (batch.shape[0], 1024), flow_features.shape
+        rgb_features = rgb_features.cpu().numpy()
+        flow_features = flow_features.cpu().numpy()
+        rgb_feautures_list.append(rgb_features)
+        flow_features_list.append(flow_features)
+    rgb_feautures_list = np.concatenate(rgb_feautures_list, axis=0)
+    flow_features_list = np.concatenate(flow_features_list, axis=0)
+    np.save(f"/data/common/abb_project/features/rgb/{videos[i]}.npy", rgb_feautures_list)
+    np.save(f"/data/common/abb_project/features/flow/{videos[i]}.npy", flow_features_list)
 # %%

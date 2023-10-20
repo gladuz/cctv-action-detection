@@ -200,7 +200,7 @@ def get_dataset():
     Code is little bit messy because of the missing xml files 
     I couldn't download the whole dataset because of the size
     """
-    dataset = []
+    dataset = {}
     xmls = glob.glob(os.path.join(DATA_PATH, '**', '*.xml'), recursive=True)
     error_files = set(open(os.path.join("processed_data", "flow_error_files.txt"), 'r').read().split('\n'))
     for xml_file in tqdm(xmls, desc="Processing rows"):
@@ -209,7 +209,8 @@ def get_dataset():
             continue
         try:
             labels = parse_xml_for_labels(xml_file)
-            dataset.append((os.path.join(xml_file), labels))
+            resized_folder_name = "__".join(xml_file.split("/")[-4:]).replace(".xml", "_resized")
+            dataset[resized_folder_name] = labels
         except FileNotFoundError as e:
             print(f"FileNotFoundError: {e}")
         except Exception as e:
@@ -246,6 +247,6 @@ def get_resized_dataset():
 if __name__ == '__main__':
     #create_resized_files_csv()
     dataset = get_dataset()
-    print(len(dataset))
+    print(len(dataset.keys()))
     pickle.dump(dataset, open(os.path.join("processed_data", "dataset_events.pkl"), 'wb'))
 # %%
