@@ -1,8 +1,8 @@
 #%%
 import torch
 import torch.nn as nn
-from bn_inception import BNInception
-from flownet import FastFlowNet
+from bn_inception import BNInception, get_bninception
+from flownet import FastFlowNet, get_flownet
 import time
 from tqdm import trange
 
@@ -10,12 +10,14 @@ class CombinedFlowModel(nn.Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.flow_extractor = FastFlowNet()
-        self.bn_inception = BNInception(2)
+        self.flow_extractor = get_flownet()
+        self.bn_inception = get_bninception()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
     
     def forward(self, x):        
         x = self.flow_extractor(x) # (B, 2, height, width)
+        # copy the flow channels to match the input of BNInception
+        x = torch.cat([x, x, x, x, x], dim=1)
         #Should be (x,y,x,y,x,y,x,y,x,y,x,y)
         #x = x.view(-1, 2, x.shape[2], x.shape[3]) # (B, 2, height, width)
         x = self.bn_inception(x)

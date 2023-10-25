@@ -5,7 +5,7 @@ mmaction2/
 slowfast/
 processed_data/dataset.pkl
 processed_data/features.pkl
-checkpoints/*
+#checkpoints/*
 
 # all .pkl files
 **/*.pkl

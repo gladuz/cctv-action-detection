@@ -464,3 +464,18 @@ class BNInception(nn.Module):
         inception_5b_relu_pool_proj_out = self.inception_5b_relu_pool_proj(inception_5b_pool_proj_bn_out)
         inception_5b_output_out = torch.cat([inception_5b_1x1_bn_out,inception_5b_3x3_bn_out,inception_5b_double_3x3_2_bn_out,inception_5b_pool_proj_bn_out], 1)
         return inception_5b_output_out
+    
+
+def get_bninception():
+    new_weights = {}
+    weights = torch.load("checkpoints/flow_bninception.pth")
+    for key in weights.keys():
+        if 'fc_action' in key:
+            continue
+        if weights[key].shape[0] == 1:
+            new_weights[key] = weights[key].squeeze(0)
+        else:
+            new_weights[key] = weights[key]
+    model = BNInception(10)
+    model.load_state_dict(new_weights)
+    return model

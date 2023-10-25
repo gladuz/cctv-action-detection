@@ -53,9 +53,9 @@ video_paths = [os.path.join("/data/common/abb_project/frames", x) for x in video
 
 #%%
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-rgb_model = resnet50().to(device)
+#rgb_model = resnet50().to(device)
 flow_model = CombinedFlowModel().to(device)
-rgb_model.eval()
+#rgb_model.eval()
 flow_model.eval()
 
 # inputs_rgb = [
@@ -85,8 +85,8 @@ flow_model.eval()
 
 # %%
 for i in trange(args.video_id_start, args.video_id_end):
-    if os.path.exists(f"/data/common/abb_project/features/rgb/{videos[i]}.npy"):
-        continue
+    # if os.path.exists(f"/data/common/abb_project/features/rgb/{videos[i]}.npy"):
+    #     continue
     dataset = FrameDataset(video_paths[i])
     dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=8)
     rgb_feautures_list = []
@@ -94,17 +94,17 @@ for i in trange(args.video_id_start, args.video_id_end):
     for batch in dataloader:
         batch = batch.to(device)
         with torch.no_grad():
-            rgb_features = rgb_model(batch[:, 1, :, :, :])
-            assert rgb_features.shape == (batch.shape[0], 2048), rgb_features.shape
+            #rgb_features = rgb_model(batch[:, 1, :, :, :])
+            #assert rgb_features.shape == (batch.shape[0], 2048), rgb_features.shape
             flow_features = flow_model(torch.cat([batch[:, 0, :, :, :], batch[:, 2, :, :, :]], dim=1))
             flow_features = flow_features.squeeze((2, 3))
             assert flow_features.shape == (batch.shape[0], 1024), flow_features.shape
-        rgb_features = rgb_features.cpu().numpy()
+        #rgb_features = rgb_features.cpu().numpy()
         flow_features = flow_features.cpu().numpy()
-        rgb_feautures_list.append(rgb_features)
+        #rgb_feautures_list.append(rgb_features)
         flow_features_list.append(flow_features)
-    rgb_feautures_list = np.concatenate(rgb_feautures_list, axis=0)
+    #rgb_feautures_list = np.concatenate(rgb_feautures_list, axis=0)
     flow_features_list = np.concatenate(flow_features_list, axis=0)
-    np.save(f"/data/common/abb_project/features/rgb/{videos[i]}.npy", rgb_feautures_list)
-    np.save(f"/data/common/abb_project/features/flow/{videos[i]}.npy", flow_features_list)
+    # np.save(f"/data/common/abb_project/features/rgb/{videos[i]}.npy", rgb_feautures_list)
+    np.save(f"/data/common/abb_project/features/flow_kinetics_bninception/{videos[i]}.npy", flow_features_list)
 # %%

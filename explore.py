@@ -209,7 +209,7 @@ def get_dataset():
             continue
         try:
             labels = parse_xml_for_labels(xml_file)
-            resized_folder_name = "__".join(xml_file.split("/")[-4:]).replace(".xml", "_resized")
+            resized_folder_name = "__".join(xml_file.split("/")[5:]).replace(".xml", "_resized")
             dataset[resized_folder_name] = labels
         except FileNotFoundError as e:
             print(f"FileNotFoundError: {e}")

@@ -178,3 +178,10 @@ class FastFlowNet(nn.Module):
         flow2 = self.decoder2(cat2) + flow3_up
         
         return flow2
+    
+
+def get_flownet():
+    weights = torch.load('./checkpoints/fastflownet_ft_mix.pth')
+    model = FastFlowNet()
+    model.load_state_dict(weights)
+    return model
