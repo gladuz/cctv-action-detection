@@ -135,6 +135,14 @@ class LSTREncoderDecoder(nn.Module):
         return class_output     # this will be of shape (batch_size, num_classes)
 
 if __name__ == "__main__":
+    
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    print('Count of using GPUs:', torch.cuda.device_count())
+    print('Current cuda device:', torch.cuda.current_device())
+    
     # init
     long_term_size = 2048  # Example size
     short_term_size = 32  # Example size
@@ -144,7 +152,7 @@ if __name__ == "__main__":
     nhead = 8  # Number of heads in multi-head attention
     num_layers = 3  # Number of transformer layers
 
-    model = LSTREncoderDecoder(d_model, nhead, num_layers, 13)
+    model = LSTREncoderDecoder(d_model, nhead, num_layers, 4).to(device)
 
     # Simulate feature update
     for _ in range(short_term_size):  # iterate over short-term memory size at least it is filled
@@ -158,8 +166,12 @@ if __name__ == "__main__":
 
     # Forward pass
     if len(memory.long_term_memory) > 0 and len(memory.short_term_memory) > 0:
-        long_term_memory_tensor = torch.stack(list(memory.long_term_memory))
-        short_term_memory_tensor = torch.stack(list(memory.short_term_memory))
+        long_term_memory_tensor = torch.stack(list(memory.long_term_memory)).to(device)
+        short_term_memory_tensor = torch.stack(list(memory.short_term_memory)).to(device)
+        
+        print(f"Long-term memory tensor shape: {long_term_memory_tensor.shape}")
+        print(f"Short-term memory tensor shape: {short_term_memory_tensor.shape}")
+        
         class_output = model(long_term_memory_tensor, short_term_memory_tensor)
         class_probabilities = nn.Softmax(dim=1)(class_output)
     else:
