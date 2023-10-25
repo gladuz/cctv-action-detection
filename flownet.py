@@ -30,7 +30,7 @@ def deconv(in_planes, out_planes, kernel_size=4, stride=2, padding=1):
 
 
 class Decoder(nn.Module):
-    def __init__(self, in_channels, groups):
+    def __init__(self, in_channels: int, groups: int):
         super(Decoder, self).__init__()
         self.in_channels = in_channels
         self.groups = groups
@@ -43,7 +43,7 @@ class Decoder(nn.Module):
         self.conv7 = nn.Conv2d(32, 2, 3, 1, 1)
 
 
-    def channel_shuffle(self, x, groups):
+    def channel_shuffle(self, x, groups: int):
         b, c, h, w = x.size()
         channels_per_group = c // groups
         x = x.view(b, groups, channels_per_group, h, w)
@@ -65,7 +65,7 @@ class Decoder(nn.Module):
 
 
 class FastFlowNet(nn.Module):
-    def __init__(self, groups=3):
+    def __init__(self, groups: int = 3):
         super(FastFlowNet, self).__init__()
         self.groups = groups
         self.pconv1_1 = convrelu(3, 16, 3, 2)
@@ -177,7 +177,4 @@ class FastFlowNet(nn.Module):
         cat2 = torch.cat([cv2, r12, flow3_up], 1)
         flow2 = self.decoder2(cat2) + flow3_up
         
-        if self.training:
-            return flow2, flow3, flow4, flow5, flow6
-        else:
-            return flow2
+        return flow2
