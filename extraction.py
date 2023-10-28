@@ -85,8 +85,8 @@ flow_model.eval()
 
 # %%
 for i in trange(args.video_id_start, args.video_id_end):
-    # if os.path.exists(f"/data/common/abb_project/features/rgb/{videos[i]}.npy"):
-    #     continue
+    if os.path.exists(f"/data/common/abb_project/features/flow_kinetics_bninception/{videos[i]}.npy"):
+        continue
     dataset = FrameDataset(video_paths[i])
     dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=8)
     rgb_feautures_list = []

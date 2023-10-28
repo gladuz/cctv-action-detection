@@ -98,3 +98,14 @@
 /data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_05/2-4/2-4_cam02_assault01_place04_night_spring.xml
 /data/common/abb_project/xmls/01.폭행(assult)/insidedoor_02/22-6/22-6_cam02_assault01_place07_night_spring.xml
 /data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_04/18-3/18-3_cam01_assault04_place02_night_spring.xml
+/data/common/abb_project/xmls/06.배회(wander)/outsidedoor_05/132-5/132-5_cam02_wander03_place06_night_summer.xml
+/data/common/abb_project/xmls/06.배회(wander)/outsidedoor_02/126-3/126-3_cam01_wander01_place05_night_spring.xml
+/data/common/abb_project/xmls/06.배회(wander)/outsidedoor_04/131-1/131-1_cam02_wander02_place04_day_spring.xml
+/data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_08/5-5/5-5_cam02_assault01_place08_day_spring.xml
+/data/common/abb_project/xmls/01.폭행(assult)/inside_croki_01/22-6/22-6_cam02_assault01_place07_night_spring.xml
+/data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_01/11-2/11-2_cam02_assault01_place08_night_summer.xml
+/data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_05/2-2/2-2_cam02_assault01_place04_night_spring.xml
+/data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_05/2-4/2-4_cam01_assault01_place04_night_summer.xml
+/data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_05/2-4/2-4_cam02_assault01_place04_night_spring.xml
+/data/common/abb_project/xmls/01.폭행(assult)/insidedoor_02/22-6/22-6_cam02_assault01_place07_night_spring.xml
+/data/common/abb_project/xmls/01.폭행(assult)/outsidedoor_04/18-3/18-3_cam01_assault04_place02_night_spring.xml

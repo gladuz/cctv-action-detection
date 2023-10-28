@@ -115,9 +115,11 @@ def label_events(events, num_frames, xml_file_path):
     frames_folder_name = "__".join(xml_file_path.split('/')[5:]).replace('.xml', '_resized')
     num_extracted_frames = len(os.listdir(os.path.join(FRAMES_PATH, frames_folder_name)))
     labels = np.zeros((num_extracted_frames, len(EVENT_LABELS)), dtype=np.int8)
+    labels[:, 0] = 1
     for event in events:
         for i in range(event['start'], event['end']):
             if i < num_extracted_frames:
+                labels[i][0] = 0
                 labels[i][EVENT_LABELS.index(event['actionname'])] = 1
             elif i - num_extracted_frames > 10:
                 with open(os.path.join("processed_data", "explore_error_files.txt"), 'a') as f:
